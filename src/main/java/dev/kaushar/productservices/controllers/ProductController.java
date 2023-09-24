@@ -1,9 +1,15 @@
 package dev.kaushar.productservices.controllers;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import dev.kaushar.productservices.dto.AddANewProductDTO;
+import dev.kaushar.productservices.dto.GetSingleProductResponseDTO;
 import dev.kaushar.productservices.dto.ProductDTO;
+import dev.kaushar.productservices.models.Product;
 import dev.kaushar.productservices.services.ProductService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -16,28 +22,31 @@ public class ProductController {
     }
 
     @GetMapping()
-    public String getAllProducts(){
-        return "Getting all product";
+    public List<Product> getAllProducts(){
+        return null;
     }
 
     @GetMapping("/{productId}")
-    public String getASingleProduct(@PathVariable("productId") Long productId){
-        return "getting single Product";
+    public GetSingleProductResponseDTO getASingleProduct(@PathVariable("productId") Long productId){
+        GetSingleProductResponseDTO responseDto = new GetSingleProductResponseDTO();
+        responseDto.setProduct(productService.getASingleProduct(productId));
+        return responseDto;
     }
 
     @PostMapping()
-    public String addANewProduct(@RequestBody ProductDTO productDTO){
-        return "Adding a new Product: " + productDTO;
+    public ResponseEntity<Product> addANewProduct(@RequestBody ProductDTO product){
+        ResponseEntity<Product> response = new ResponseEntity<>(productService.addANewProduct(product), HttpStatus.OK);
+        return response;
     }
 
     @PutMapping("/{productId}")
-    public String updateAProduct(@RequestBody ProductDTO productDTO, @PathVariable("productId") Long productId){
-        return "Updating A Product with productID: "+ productId + "values: " + productDTO;
+    public Product updateAProduct(@RequestBody ProductDTO productDTO, @PathVariable("productId") Long productId){
+        return null;
     }
 
     @DeleteMapping("/{productId}")
-    public String deleteAProduct(@PathVariable("productId") Long productId){
-        return "Deleting A Product with product Id: " + productId;
+    public Product deleteAProduct(@PathVariable("productId") Long productId){
+        return null;
     }
 
 
