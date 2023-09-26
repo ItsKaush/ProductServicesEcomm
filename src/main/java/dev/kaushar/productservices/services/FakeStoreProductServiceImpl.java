@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,7 +19,23 @@ public class FakeStoreProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getAllProducts() {
-        return null;
+        RestTemplate restTemplate = new RestTemplateBuilder().build();
+        ResponseEntity<ProductDTO[]> response = restTemplate.getForEntity("https://fakestoreapi.com/products", ProductDTO[].class);
+
+        List<Product> products = new ArrayList<>();
+        for(ProductDTO productDTO: response.getBody()){
+            Product product = new Product();
+            product.setId(productDTO.getId());
+            product.setTitle(productDTO.getTitle());
+            product.setPrice(productDTO.getPrice());
+            Category category = new Category();
+            category.setName(productDTO.getCategory());
+            product.setCategory(category);
+            product.setDescription(productDTO.getDescription());
+            product.setImageUrl(productDTO.getImageUrl());
+            products.add(product);
+        }
+        return products;
     }
 
     @Override
@@ -51,7 +68,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
 
         ProductDTO productDTO1 = response.getBody();
         Product product1 = new Product();
-        product.setId(productDTO1.getId());
+        product1.setId(productDTO1.getId());
         product1.setTitle(productDTO1.getTitle());
         product1.setPrice(productDTO1.getPrice());
         product1.setDescription(productDTO1.getDescription());
@@ -64,8 +81,14 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateAProduct(ProductDTO productDTO, Long productId) {
-        return null;
+    public void updateAProduct(ProductDTO productDTO, Long productId) {
+        RestTemplate restTemplate = new RestTemplateBuilder().build();
+        restTemplate.put(
+                "https://fakestoreapi.com/products/{productId}",
+                productDTO,
+                productId
+        );
+
     }
 
     @Override

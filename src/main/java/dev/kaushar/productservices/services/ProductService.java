@@ -13,7 +13,7 @@ public interface ProductService {
 
     Product addANewProduct(ProductDTO product);
 
-    Product updateAProduct( ProductDTO productDTO,  Long productId);
+    void updateAProduct( ProductDTO productDTO,  Long productId);
 
     Product deleteAProduct(Long productId);
 }
