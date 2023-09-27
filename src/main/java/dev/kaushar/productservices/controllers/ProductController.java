@@ -11,6 +11,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -25,26 +26,47 @@ public class ProductController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Product>> getAllProducts(){
-        ResponseEntity<List<Product>> response = new ResponseEntity<>(productService.getAllProducts(),HttpStatus.OK);
+    public ResponseEntity<List<ProductDTO>> getAllProducts(){
+        List<Product> products = productService.getAllProducts();
+        List<ProductDTO> productDTOS = new ArrayList<>();
+        for(Product product : products){
+            productDTOS.add(productToProductDto(product));
+        }
+        ResponseEntity<List<ProductDTO>> response = new ResponseEntity<>(productDTOS, HttpStatus.OK);
         return response;
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getASingleProduct(@PathVariable("productId") Long productId){
+    public ResponseEntity<ProductDTO> getASingleProduct(@PathVariable("productId") Long productId){
+        ProductDTO productDTO = productToProductDto(productService.getASingleProduct(productId));
+
         MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
         headers.add("auth-token","test-token");
 
-        ResponseEntity<Product> response = new ResponseEntity<>(productService.getASingleProduct(productId), headers, HttpStatus.OK);
+        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDTO, headers, HttpStatus.OK);
 
         return response;
     }
 
+    private ProductDTO productToProductDto(Product product){
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId());
+        productDTO.setTitle(product.getTitle());
+        productDTO.setPrice(product.getPrice());
+        productDTO.setDescription(product.getDescription());
+        productDTO.setImageUrl(product.getImageUrl());
+        productDTO.setCategory(product.getCategory().getName());
+        return productDTO;
+    }
+
+
     @PostMapping()
-    public ResponseEntity<Product> addANewProduct(@RequestBody ProductDTO product){
+    public ResponseEntity<ProductDTO> addANewProduct(@RequestBody ProductDTO product){
+        ProductDTO productDTO = productToProductDto(productService.addANewProduct(product));
         MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
         headers.add("auth-token","test-token");
-        ResponseEntity<Product> response = new ResponseEntity<>(productService.addANewProduct(product), HttpStatus.OK);
+        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDTO, HttpStatus.OK);
+
         return response;
     }
 
