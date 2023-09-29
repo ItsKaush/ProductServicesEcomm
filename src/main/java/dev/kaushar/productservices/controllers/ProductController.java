@@ -1,8 +1,12 @@
 package dev.kaushar.productservices.controllers;
 
+import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreProductDto;
 import dev.kaushar.productservices.dto.AddANewProductDTO;
+import dev.kaushar.productservices.dto.ErrorResponseDto;
 import dev.kaushar.productservices.dto.GetSingleProductResponseDTO;
 import dev.kaushar.productservices.dto.ProductDTO;
+import dev.kaushar.productservices.exceptions.NotFoundException;
+import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
 import dev.kaushar.productservices.services.ProductService;
 import org.springframework.http.HttpStatus;
@@ -11,9 +15,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.NotActiveException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
@@ -37,9 +43,14 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductDTO> getASingleProduct(@PathVariable("productId") Long productId){
-        ProductDTO productDTO = productToProductDto(productService.getASingleProduct(productId));
+    public ResponseEntity<ProductDTO> getASingleProduct(@PathVariable("productId") Long productId)  throws NotFoundException {
+        Optional<Product> productOptional = productService.getASingleProduct(productId);
 
+        if(productOptional.isEmpty()){
+            throw new NotFoundException("No product found with product Id: " + productId);
+        }
+
+        ProductDTO productDTO = productToProductDto(productOptional.get());
         MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
         headers.add("auth-token","test-token");
 
@@ -47,6 +58,43 @@ public class ProductController {
 
         return response;
     }
+
+    @PostMapping()
+    public ResponseEntity<ProductDTO> addANewProduct(@RequestBody ProductDTO product){
+        ProductDTO productDTO = productToProductDto(productService.addANewProduct(productDtoToProduct(product)));
+        MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
+        headers.add("auth-token","test-token");
+        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDTO, HttpStatus.OK);
+
+        return response;
+    }
+
+    @PutMapping("/{productId}")
+    public ResponseEntity<ProductDTO> updateAProduct(@RequestBody ProductDTO productDTO, @PathVariable("productId") Long productId) throws NotFoundException{
+
+        Optional<Product> productOptional = productService.updateAProduct(productDtoToProduct(productDTO),productId);
+
+        if(productOptional.isEmpty()){
+            throw new NotFoundException("No product found with product Id to update: " + productId);
+        }
+
+        ProductDTO productDto = productToProductDto(productOptional.get());
+        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDto,HttpStatus.OK);
+        return response;
+    }
+
+
+    @DeleteMapping("/{productId}")
+    public ProductDTO deleteAProduct(@PathVariable("productId") Long productId) throws NotFoundException{
+        Optional<Product> productOptional = productService.deleteAProduct(productId);
+        if(productOptional.isEmpty()){
+            throw new NotFoundException("Product with id: " + productId + " not found to delete");
+        }
+
+        return productToProductDto(productOptional.get());
+    }
+
+
 
     private ProductDTO productToProductDto(Product product){
         ProductDTO productDTO = new ProductDTO();
@@ -59,29 +107,19 @@ public class ProductController {
         return productDTO;
     }
 
+    private Product productDtoToProduct(ProductDTO productDTO){
+        Product product = new Product();
+        product.setId(productDTO.getId());
+        product.setTitle(productDTO.getTitle());
+        product.setPrice(productDTO.getPrice());
+        product.setDescription(productDTO.getDescription());
+        product.setImageUrl(productDTO.getImageUrl());
+        Category category = new Category();
+        category.setName(productDTO.getCategory());
+        product.setCategory(category);
 
-    @PostMapping()
-    public ResponseEntity<ProductDTO> addANewProduct(@RequestBody ProductDTO product){
-        ProductDTO productDTO = productToProductDto(productService.addANewProduct(product));
-        MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
-        headers.add("auth-token","test-token");
-        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDTO, HttpStatus.OK);
-
-        return response;
+        return product;
     }
-
-    @PutMapping("/{productId}")
-    public ResponseEntity<Product> updateAProduct(@RequestBody ProductDTO productDTO, @PathVariable("productId") Long productId){
-        productService.updateAProduct(productDTO,productId);
-        ResponseEntity<Product> response = new ResponseEntity<>(productService.getASingleProduct(productId),HttpStatus.OK);
-        return response;
-    }
-
-    @DeleteMapping("/{productId}")
-    public Product deleteAProduct(@PathVariable("productId") Long productId){
-        return null;
-    }
-
 
 
 }

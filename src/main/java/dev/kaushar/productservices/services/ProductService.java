@@ -1,19 +1,19 @@
 package dev.kaushar.productservices.services;
 
-import dev.kaushar.productservices.dto.AddANewProductDTO;
-import dev.kaushar.productservices.dto.ProductDTO;
+
 import dev.kaushar.productservices.models.Product;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductService {
     List<Product> getAllProducts();
 
-    Product getASingleProduct(Long productId);
+    Optional<Product> getASingleProduct(Long productId) ;
 
-    Product addANewProduct(ProductDTO product);
+    Product addANewProduct(Product product);
 
-    void updateAProduct( ProductDTO productDTO,  Long productId);
+    Optional<Product> updateAProduct( Product product,  Long productId);
 
-    Product deleteAProduct(Long productId);
+    Optional<Product> deleteAProduct(Long productId);
 }

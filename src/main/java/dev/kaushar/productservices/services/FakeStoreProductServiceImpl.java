@@ -2,19 +2,12 @@ package dev.kaushar.productservices.services;
 
 import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreAPIClient;
 import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreProductDto;
-import dev.kaushar.productservices.dto.AddANewProductDTO;
-import dev.kaushar.productservices.dto.ProductDTO;
 import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
-import jakarta.annotation.Nullable;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FakeStoreProductServiceImpl implements ProductService {
@@ -34,47 +27,79 @@ public class FakeStoreProductServiceImpl implements ProductService {
         return products;
     }
 
+    @Override
+    public Optional<Product> getASingleProduct(Long productId) {
+        Optional<FakeStoreProductDto> fakeStoreProductDtoOptional = fakeStoreAPIClient.getASingleProduct(productId);
+        if(fakeStoreProductDtoOptional.isEmpty()){
+            return Optional.empty();
+        }
+        Optional<Product> productOptional = Optional.of(fakeStoreProductDtoToProduct(fakeStoreProductDtoOptional.get()));
+
+        return productOptional;
+
+    }
+
+    @Override
+    public Product addANewProduct(Product product) {
+        FakeStoreProductDto fakeStoreProductDto = productToFakeStoreProductDto(product);
+
+        return fakeStoreProductDtoToProduct(fakeStoreAPIClient.addANewProduct(fakeStoreProductDto));
+    }
+
+    @Override
+    public Optional<Product> updateAProduct(Product product, Long productId) {
+        FakeStoreProductDto fakeStoreProductDto = productToFakeStoreProductDto(product);
+
+        Optional<FakeStoreProductDto> fakeStoreProductDtoOptional = fakeStoreAPIClient.updateAProduct(fakeStoreProductDto, productId);
+
+        if(fakeStoreProductDtoOptional.isEmpty()){
+            return Optional.empty();
+        }
+
+        Optional<Product> productOptional = Optional.of(fakeStoreProductDtoToProduct(fakeStoreProductDtoOptional.get()));
+
+       return productOptional;
+
+    }
+
+    @Override
+    public Optional<Product> deleteAProduct(Long productId) {
+        Optional<FakeStoreProductDto> fakeStoreProductDtoOptional = fakeStoreAPIClient.deleteAProduct(productId);
+        if(fakeStoreProductDtoOptional.isEmpty()){
+            return Optional.empty();
+        }
+
+        Optional<Product> productOptional = Optional.of(fakeStoreProductDtoToProduct(fakeStoreProductDtoOptional.get()));
+
+        return productOptional;
+    }
+
+
     private Product fakeStoreProductDtoToProduct(FakeStoreProductDto fakeStoreProductDto){
-            Product product = new Product();
+        Product product = new Product();
 
-            product.setId(fakeStoreProductDto.getId());
-            product.setTitle(fakeStoreProductDto.getTitle());
-            product.setPrice(fakeStoreProductDto.getPrice());
-            Category category = new Category();
-            category.setName(fakeStoreProductDto.getCategory());
-            product.setCategory(category);
-            product.setDescription(fakeStoreProductDto.getDescription());
-            product.setImageUrl(fakeStoreProductDto.getImageUrl());
+        product.setId(fakeStoreProductDto.getId());
+        product.setTitle(fakeStoreProductDto.getTitle());
+        product.setPrice(fakeStoreProductDto.getPrice());
+        Category category = new Category();
+        category.setName(fakeStoreProductDto.getCategory());
+        product.setCategory(category);
+        product.setDescription(fakeStoreProductDto.getDescription());
+        product.setImageUrl(fakeStoreProductDto.getImage());
 
-            return product;
+        return product;
     }
 
-    @Override
-    public Product getASingleProduct(Long productId) {
+    private FakeStoreProductDto productToFakeStoreProductDto(Product product){
+        FakeStoreProductDto fakeStoreProductDto = new FakeStoreProductDto();
 
-        return fakeStoreProductDtoToProduct(fakeStoreAPIClient.getASingleProduct(productId));
+        fakeStoreProductDto.setId(product.getId());
+        fakeStoreProductDto.setTitle(product.getTitle());
+        fakeStoreProductDto.setPrice(product.getPrice());
+        fakeStoreProductDto.setCategory(product.getCategory().getName());
+        fakeStoreProductDto.setDescription(product.getDescription());
+        fakeStoreProductDto.setImage(product.getImageUrl());
 
-    }
-
-    @Override
-    public Product addANewProduct(ProductDTO product) {
-
-        return fakeStoreProductDtoToProduct(fakeStoreAPIClient.addANewProduct(product));
-    }
-
-    @Override
-    public void updateAProduct(ProductDTO productDTO, Long productId) {
-        RestTemplate restTemplate = new RestTemplateBuilder().build();
-        restTemplate.put(
-                "https://fakestoreapi.com/products/{productId}",
-                productDTO,
-                productId
-        );
-
-    }
-
-    @Override
-    public Product deleteAProduct(Long productId) {
-        return null;
+        return fakeStoreProductDto;
     }
 }
