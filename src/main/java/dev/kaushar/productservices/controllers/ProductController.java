@@ -1,23 +1,21 @@
 package dev.kaushar.productservices.controllers;
 
-import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreProductDto;
-import dev.kaushar.productservices.dto.AddANewProductDTO;
-import dev.kaushar.productservices.dto.ErrorResponseDto;
-import dev.kaushar.productservices.dto.GetSingleProductResponseDTO;
 import dev.kaushar.productservices.dto.ProductDTO;
 import dev.kaushar.productservices.exceptions.NotFoundException;
 import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
+import dev.kaushar.productservices.repositories.ProductRepository;
 import dev.kaushar.productservices.services.ProductService;
+import dev.kaushar.productservices.services.ProductServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.NotActiveException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,10 +23,11 @@ import java.util.Optional;
 @RequestMapping("/products")
 public class ProductController {
 
+    @Autowired
+    @Qualifier("SelfProductService")
     private ProductService productService;
-
-    public ProductController(ProductService productService){
-        this.productService =productService;
+    public ProductController(@Qualifier("SelfProductService") ProductService productService){
+        this.productService = productService;
     }
 
     @GetMapping()
@@ -61,12 +60,14 @@ public class ProductController {
 
     @PostMapping()
     public ResponseEntity<ProductDTO> addANewProduct(@RequestBody ProductDTO product){
-        ProductDTO productDTO = productToProductDto(productService.addANewProduct(productDtoToProduct(product)));
+        Product newProduct = productDtoToProduct(product);
+        Product addedProduct = productService.addANewProduct(newProduct);
+        ProductDTO productDTO = productToProductDto(addedProduct);
+//        ProductDTO productDTO = productToProductDto(productService.addANewProduct(productDtoToProduct(product)));
         MultiValueMap<String, String> headers= new LinkedMultiValueMap<>();
         headers.add("auth-token","test-token");
-        ResponseEntity<ProductDTO> response = new ResponseEntity<>(productDTO, HttpStatus.OK);
 
-        return response;
+        return new ResponseEntity<>(productDTO, HttpStatus.OK);
     }
 
     @PutMapping("/{productId}")

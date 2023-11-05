@@ -5,6 +5,7 @@ import dev.kaushar.productservices.exceptions.NotFoundException;
 import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
 import dev.kaushar.productservices.services.CategoryService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class CategoryController {
     private CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService){
+    public CategoryController(@Qualifier("SelfCategoryService") CategoryService  categoryService){
         this.categoryService = categoryService;
     }
 

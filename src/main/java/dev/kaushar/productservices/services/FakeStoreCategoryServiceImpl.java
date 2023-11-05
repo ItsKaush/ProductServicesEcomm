@@ -4,6 +4,7 @@ import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreAPIClient
 import dev.kaushar.productservices.clients.FakeStoreAPIClient.FakeStoreProductDto;
 import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Qualifier (value = "FakeStoreService")
 public class FakeStoreCategoryServiceImpl implements CategoryService{
 
     private FakeStoreAPIClient fakeStoreAPIClient;
