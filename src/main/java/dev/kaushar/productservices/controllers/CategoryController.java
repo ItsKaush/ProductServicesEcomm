@@ -18,7 +18,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/products")
 public class CategoryController {
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     public CategoryController(@Qualifier("SelfCategoryService") CategoryService  categoryService){
         this.categoryService = categoryService;

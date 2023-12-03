@@ -39,29 +39,29 @@ public class ProductController {
 
     @GetMapping()
     public ResponseEntity<List<ProductDTO>> getAllProducts(@Nullable @RequestHeader("AUTH_TOKEN") String token, @Nullable @RequestHeader("USER_ID") Long userId){
-        if(token == null || userId == null){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        //check the token returned by auth client, if it is active then go ahead
-        ValidateSessionResponseDto responseDto = authenticationClient.validate(token,userId);
-        if(responseDto.getSessionStatus().equals(SessionStatus.INVALID)){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
-        //It session active, then check if has a specific role then only call the product service
-        Set<Role> userRoles = responseDto.getUserDto().getRoles();
-        boolean isAdmin = false;
-        for(Role role : userRoles){
-            if (role.getRole().equals("ADMIN")) {
-                isAdmin = true;
-                break;
-            }
-        }
-
-        if(!isAdmin){
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+//        if(token == null || userId == null){
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        //check the token returned by auth client, if it is active then go ahead
+//        ValidateSessionResponseDto responseDto = authenticationClient.validate(token,userId);
+//        if(responseDto.getSessionStatus().equals(SessionStatus.INVALID)){
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        //It session active, then check if has a specific role then only call the product service
+//        Set<Role> userRoles = responseDto.getUserDto().getRoles();
+//        boolean isAdmin = false;
+//        for(Role role : userRoles){
+//            if (role.getRole().equals("ADMIN")) {
+//                isAdmin = true;
+//                break;
+//            }
+//        }
+//
+//        if(!isAdmin){
+//            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+//        }
 
         List<Product> products = productService.getAllProducts(token, userId);
         List<ProductDTO> productDTOS = new ArrayList<>();

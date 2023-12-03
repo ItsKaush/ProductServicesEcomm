@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public class FakeStoreProductServiceImpl implements ProductService {
 
-    private FakeStoreAPIClient fakeStoreAPIClient;
+    private final FakeStoreAPIClient fakeStoreAPIClient;
 
     public FakeStoreProductServiceImpl(FakeStoreAPIClient fakeStoreAPIClient) {
         this.fakeStoreAPIClient = fakeStoreAPIClient;
