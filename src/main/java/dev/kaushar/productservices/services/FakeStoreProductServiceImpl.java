@@ -18,7 +18,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
         this.fakeStoreAPIClient = fakeStoreAPIClient;
     }
     @Override
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(String token, Long userId) {
         List<Product> products = new ArrayList<>();
         for (FakeStoreProductDto fakeStoreProductDto : fakeStoreAPIClient.getAllProducts()) {
             products.add(fakeStoreProductDtoToProduct(fakeStoreProductDto));

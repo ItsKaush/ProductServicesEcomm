@@ -26,10 +26,10 @@ public class CategoryController {
 
     @GetMapping("/categories")
     public List<String> getAllCategories(){
-        List<Category> categoryServicecategories = categoryService.getAllCategories();
+        List<Category> categoryServiceCategories = categoryService.getAllCategories();
 
         List<String> categories = new ArrayList<>();
-        for(Category category : categoryServicecategories){
+        for(Category category : categoryServiceCategories){
             categories.add(category.getName());
         }
         return categories;

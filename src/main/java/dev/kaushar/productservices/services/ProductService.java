@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductService {
-    List<Product> getAllProducts();
+    List<Product> getAllProducts(String token, Long userId);
 
     Optional<Product> getASingleProduct(Long productId) ;
 

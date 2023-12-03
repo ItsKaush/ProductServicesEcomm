@@ -25,7 +25,7 @@ public class ProductServiceImpl implements ProductService{
         this.categoryRepository = categoryRepository;
     }
     @Override
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(String token, Long userId) {
         return productRepository.findByEndTMSNull();
     }
 

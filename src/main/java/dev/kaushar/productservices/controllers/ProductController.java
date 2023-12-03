@@ -1,16 +1,18 @@
 package dev.kaushar.productservices.controllers;
 
+import dev.kaushar.productservices.authenticationclient.AuthenticationClient;
+import dev.kaushar.productservices.authenticationclient.Dto.Role;
+import dev.kaushar.productservices.authenticationclient.Dto.SessionStatus;
+import dev.kaushar.productservices.authenticationclient.Dto.ValidateSessionResponseDto;
 import dev.kaushar.productservices.dto.ProductDTO;
 import dev.kaushar.productservices.exceptions.NotFoundException;
 import dev.kaushar.productservices.models.Category;
 import dev.kaushar.productservices.models.Product;
-import dev.kaushar.productservices.repositories.ProductRepository;
 import dev.kaushar.productservices.services.ProductService;
-import dev.kaushar.productservices.services.ProductServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -18,27 +20,55 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
-    @Autowired
+
     @Qualifier("SelfProductService")
     private ProductService productService;
-    public ProductController(@Qualifier("SelfProductService") ProductService productService){
+
+
+    private final AuthenticationClient authenticationClient;
+    public ProductController(@Qualifier("SelfProductService") ProductService productService, AuthenticationClient authenticationClient){
         this.productService = productService;
+        this.authenticationClient = authenticationClient;
     }
 
     @GetMapping()
-    public ResponseEntity<List<ProductDTO>> getAllProducts(){
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<List<ProductDTO>> getAllProducts(@Nullable @RequestHeader("AUTH_TOKEN") String token, @Nullable @RequestHeader("USER_ID") Long userId){
+        if(token == null || userId == null){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //check the token returned by auth client, if it is active then go ahead
+        ValidateSessionResponseDto responseDto = authenticationClient.validate(token,userId);
+        if(responseDto.getSessionStatus().equals(SessionStatus.INVALID)){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //It session active, then check if has a specific role then only call the product service
+        Set<Role> userRoles = responseDto.getUserDto().getRoles();
+        boolean isAdmin = false;
+        for(Role role : userRoles){
+            if (role.getRole().equals("ADMIN")) {
+                isAdmin = true;
+                break;
+            }
+        }
+
+        if(!isAdmin){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        List<Product> products = productService.getAllProducts(token, userId);
         List<ProductDTO> productDTOS = new ArrayList<>();
         for(Product product : products){
             productDTOS.add(productToProductDto(product));
         }
-        ResponseEntity<List<ProductDTO>> response = new ResponseEntity<>(productDTOS, HttpStatus.OK);
-        return response;
+        return new ResponseEntity<>(productDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/{productId}")
